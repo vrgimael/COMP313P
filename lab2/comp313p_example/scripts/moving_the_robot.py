@@ -27,7 +27,7 @@ class stdr_controller():
         while not rospy.is_shutdown():
  
             vel_msg = Twist()
-	    
+        
             pose = self.current_pose.pose.pose
 
             # Get the position vector. ROS uses nested types for generality, but it gets to be a bit
@@ -41,34 +41,23 @@ class stdr_controller():
 
             theta = 2 * atan2(orientation.z, orientation.w) * 180 / pi
 
-
-
-
-            position.x = 1
-            position.y = 2
-            theta = 0
-
-
-
-
-
             # Show the output
-            rospy.loginfo('Current positionzzzzz, x: {}, y:{}, theta:{}'.format(position.x,
+            rospy.loginfo('Current position, x: {}, y:{}, theta:{}'.format(position.x,
                 position.y, theta))
 
-            # try:
-            #     lin_velocity = float(raw_input('Enter desired linear velocity: '))
-            #     rot_velocity = float(raw_input('Enter desired rotational velocity: '))
-            #     duration = float(raw_input('Enter desired duration: '))
-            #     vel_msg.linear.x = lin_velocity
-            #     vel_msg.angular.z = rot_velocity * pi / 180.0
-            #     self.velocity_publisher.publish(vel_msg)
-            #     rospy.sleep(duration)
-            # except ValueError:
-            #     rospy.loginfo('Illegal value entered; try again')
+            try:
+                lin_velocity = float(raw_input('Enter desired linear velocity: '))
+                rot_velocity = float(raw_input('Enter desired rotational velocity: '))
+                duration = float(raw_input('Enter desired duration: '))
+                vel_msg.linear.x = lin_velocity
+                vel_msg.angular.z = rot_velocity * pi / 180.0
+                self.velocity_publisher.publish(vel_msg)
+                rospy.sleep(duration)
+            except ValueError:
+                rospy.loginfo('Illegal value entered; try again')
 
-            # vel_msg.linear.x = 0.0
-            # vel_msg.angular.z = 0.0
+            vel_msg.linear.x = 0.0
+            vel_msg.angular.z = 0.0
             self.velocity_publisher.publish(vel_msg)
 
    

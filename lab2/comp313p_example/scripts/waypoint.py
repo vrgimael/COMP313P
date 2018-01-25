@@ -5,14 +5,6 @@ from geometry_msgs.msg  import Twist
 from nav_msgs.msg import Odometry
 from math import pow,atan2,sqrt,pi
 from PyKDL import Rotation
-import fileinput
-
-
-
-
-
-
-
 
 
 
@@ -21,70 +13,94 @@ class stdr_controller():
     def __init__(self):
         #Creating our node,publisher and subscriber
         rospy.init_node('stdr_controller', anonymous=True)
+        # self.velocity_publisher = rospy.Publisher('/robot0/cmd_vel', Twist, queue_size=10)
+        # self.rob_status = rospy.Publisher('/robot0/robot_status', Twist, queue_size=10)
+        self.status_publisher = rospy.Publisher('/robot0/robot_status', Twist, queue_size=10)
         self.velocity_publisher = rospy.Publisher('/robot0/cmd_vel', Twist, queue_size=10)
-        self.start_pos = rospy.Publisher('/robot0/cmd_vel', Twist, queue_size=10)
         self.current_pose_subscriber = rospy.Subscriber('/robot0/odom', Odometry, self.current_callback)
         self.current_pose = Odometry()
         self.distance_tolerance = 0.1
         self.angle_tolerance = 5
+        self.rate = rospy.Rate(10)
+
  
     def current_callback(self, data):
         self.current_pose = data
 
-    def run(self):
+
+    def run(self):        
+        vel_msg = Twist()
+        stat_msg = Twist()
+        # path = '/Users/fsaxena/Documents/UCL/3rd Year/COMP313P/src/comp313p_lab2/comp313p_example/scripts/waypoints.txt'
+        path = '/home/catkin_ws/src/comp313p/comp313p_example/scripts/waypoints.txt'
+        f = open(path)
+        eachLine = []
+
+        for line in f:
+            eachLine.append(line)
+
+        f.close()
+
+        def get_goal(line_array, index):
+            x_goal, y_goal, theta_goal = line_array[index].split()
+            return x_goal, y_goal, theta_goal
+
+        
 
         # Sleep for 1s before starting. This gives time for all the parts of stdr to start up
         rospy.sleep(1.0)
 
-        sta_pos = Twist()
+        self.pose = self.current_pose.pose.pose
 
-        pose_start = self.current_pose.pose.pose
-        start_position = pose_start.start_position
-        start_orientation = pose_start.start_orientation
-        start_theta = 2 * atan2(start_orientation.z, start_orientation.w) * 180 / pi
 
+        x_pos = self.pose.position.x
+        y_pos = self.pose.position.y
+
+        orientation = self.pose.orientation
+        theta = 2 * atan2(orientation.z, orientation.w) * 180 / pi
+
+
+        rospy.loginfo('STARTED. Current x: ' + str(x_pos) + ' Current y: ' + str(y_pos) +  ' Current theta: ' + str(theta))
+
+        x_0, y_0, th_0 = get_goal(eachLine,0)
+
+        while sqrt(pow((float(x_0) - x_pos), 2) + pow((float(y_0) - y_pos), 2)) >= 0.1:
+            vel_msg.linear.x = 1.5 * sqrt(pow((float(x_0) - x_pos), 2) + pow((float(y_0) - y_pos), 2))
+            vel_msg.linear.y = 0
+            vel_msg.linear.z = 0
+
+            self.velocity_publisher.publish(vel_msg)
+            self.rate.sleep()
+
+        vel_msg.linear.x = 0
+        x_pos = self.pose.position.x
+        y_pos = self.pose.position.y
+        rospy.loginfo('Waypoint 1. Current x: ' + str(x_pos) + ' Current y: ' + str(y_pos) +  ' Current theta: ' + str(theta))
+        self.velocity_publisher.publish(vel_msg)
+
+        """
         while not rospy.is_shutdown():
  
-            vel_msg = Twist()
+            rob_stat = Twist()
 	    
-            pose = self.current_pose.pose.pose
-
-            # Get the position vector. ROS uses nested types for generality, but it gets to be a bit
-            # cumbersome
-
-            position = pose.position
- 
-            # The pose returns the orientation as a quaternion, which is a 4D representation of 3D
-            # rotations. We just want the heading angle, so some conversion is required
-            # 
-            orientation = pose.orientation
-
-            theta = 2 * atan2(orientation.z, orientation.w) * 180 / pi
+            # pose_start = self.current_pose.pose.pose
+            # start_position = pose_start.start_position
+            # start_orientation = pose_start.start_orientation
+            # start_theta = 2 * atan2(start_orientation.z, start_orientation.w) * 180 / pi
 
 
-            position.x = 0
-            position.y = 0
-            theta = 0
+
+            for i in range(len(eachLine)):
+                line = eachLine[i]
+                x_goal, y_goal, theta_goal = line.split()
+
 
             # Show the output
-            rospy.loginfo('Current position, x: {}, y:{}, theta:{}'.format(position.x,
-                position.y, theta))
+                rospy.loginfo('Current position, x: {}, y:{}, theta:{}'.format(x_goal,
+                    y_goal, theta_goal))
 
-
-            if fileinput.input() is not None:
-			for line in fileinput.input():
-				x_line, y_line, theta_line = line.split()
-				position.x = x_line
-				position.y = y_line
-				theta = theta_line
-
-				self.velocity_publisher.publish(vel_msg)
-
-			# else:
-			# 	x = raw_input('Enter x: ')
-			# 	y = raw_input('Enter y: ')
-			# 	theta = raw_input('Enter theta: ')
-			# 	print x, y, theta
+            rospy.sleep(5)
+			# self.velocity_publisher.publish(vel_msg)
             
             
             # try:
@@ -101,7 +117,7 @@ class stdr_controller():
             # vel_msg.linear.x = 0.0
             # vel_msg.angular.z = 0.0
 
-   
+            """
 if __name__ == '__main__':
     try:
         #Testing our function
