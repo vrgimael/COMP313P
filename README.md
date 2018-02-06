@@ -1,4 +1,3 @@
 # COMP313
 
-# hello there
-# something else
+# let's put everything we need here
