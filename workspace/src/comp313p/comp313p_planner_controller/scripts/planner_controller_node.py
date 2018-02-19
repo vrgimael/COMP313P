@@ -47,12 +47,14 @@ class PlannerControllerNode(object):
 
         # Allocate the occupancy grid and set the data from the array sent back by the map server
         self.occupancyGrid = OccupancyGrid(map.info.width, map.info.height, map.info.resolution)
+        self.occupancyGrid.setScale(rospy.get_param('plan_scale', 5))
         self.occupancyGrid.setFromDataArrayFromMapServer(map.data)
+        self.occupancyGrid.expandObstaclesToAccountForCircularRobotOfRadius(0.2)
 
     def createPlanner(self):
         self.planner = FIFOPlanner('FIFO', self.occupancyGrid)
         self.planner.setPauseTime(0)
-        self.planner.maximumGridDrawerWindowHeightInPixels = rospy.get_param('maximum_window_height_in_pixels', 700)
+        self.planner.windowHeightInPixels = rospy.get_param('maximum_window_height_in_pixels', 700)
         
     def createRobotController(self):
         self.robotController = Move2GoalController(self.occupancyGrid)
@@ -71,6 +73,9 @@ class PlannerControllerNode(object):
 
         return GoalResponse(True)
 
+    # Run the planner. Note that we do not take account of the robot orientation when planning.
+    # The reason is simplicity; adding orientation means we have a full 3D planning problem.
+    # As a result, the plan will not be as efficient as it could be.
     def driveToGoal(self, goal):
 
         # Get the current pose of the robot
@@ -87,21 +92,28 @@ class PlannerControllerNode(object):
         print "startCellCoords = " + str(startCellCoords)
         print "goalCellCoords = " + str(goalCellCoords)
 
+         # Exit if we need to
+        if rospy.is_shutdown() is True:
+            return False
+
         # Get the plan
         goalReached = self.planner.search(startCellCoords, goalCellCoords)
 
+        # Exit if we need to
+        if rospy.is_shutdown() is True:
+            return False
+
         # If we can't reach the goal, give up and return
-        if (goalReached == False):
+        if goalReached is False:
             rospy.logwarn("Could not reach the goal at (%d, %d); moving to next goal", \
                           goalCellCoords[0], goalCellCoords[1])
-            self.planner.gridDrawer.waitForKeyPress()
             return False
         
         # Extract the path
         path = self.planner.extractPathToGoal()
 
         # Now drive it
-        self.robotController.drivePathToGoal(path)
+        self.robotController.drivePathToGoal(path, goal.theta, self.planner.getPlannerDrawer())
 
         return True
     

@@ -23,6 +23,7 @@ class GoalRequest {
       // initObj === null is a special case for deserialization where we don't initialize fields
       this.x = null;
       this.y = null;
+      this.theta = null;
     }
     else {
       if (initObj.hasOwnProperty('x')) {
@@ -37,6 +38,12 @@ class GoalRequest {
       else {
         this.y = 0.0;
       }
+      if (initObj.hasOwnProperty('theta')) {
+        this.theta = initObj.theta
+      }
+      else {
+        this.theta = 0.0;
+      }
     }
   }
 
@@ -46,6 +53,8 @@ class GoalRequest {
     bufferOffset = _serializer.float32(obj.x, buffer, bufferOffset);
     // Serialize message field [y]
     bufferOffset = _serializer.float32(obj.y, buffer, bufferOffset);
+    // Serialize message field [theta]
+    bufferOffset = _serializer.float32(obj.theta, buffer, bufferOffset);
     return bufferOffset;
   }
 
@@ -57,11 +66,13 @@ class GoalRequest {
     data.x = _deserializer.float32(buffer, bufferOffset);
     // Deserialize message field [y]
     data.y = _deserializer.float32(buffer, bufferOffset);
+    // Deserialize message field [theta]
+    data.theta = _deserializer.float32(buffer, bufferOffset);
     return data;
   }
 
   static getMessageSize(object) {
-    return 8;
+    return 12;
   }
 
   static datatype() {
@@ -71,7 +82,7 @@ class GoalRequest {
 
   static md5sum() {
     //Returns md5sum for a message object
-    return 'ff8d7d66dd3e4b731ef14a45d38888b6';
+    return 'a130bc60ee6513855dc62ea83fcc5b20';
   }
 
   static messageDefinition() {
@@ -79,6 +90,7 @@ class GoalRequest {
     return `
     float32 x
     float32 y
+    float32 theta
     
     `;
   }
@@ -101,6 +113,13 @@ class GoalRequest {
     }
     else {
       resolved.y = 0.0
+    }
+
+    if (msg.theta !== undefined) {
+      resolved.theta = msg.theta;
+    }
+    else {
+      resolved.theta = 0.0
     }
 
     return resolved;
@@ -182,6 +201,6 @@ class GoalResponse {
 module.exports = {
   Request: GoalRequest,
   Response: GoalResponse,
-  md5sum() { return 'a8efc784321f144446c1bf660ebd66ee'; },
+  md5sum() { return 'b457b1c81af64c78b366c8737f41a06f'; },
   datatype() { return 'comp313p_planner_controller/Goal'; }
 };

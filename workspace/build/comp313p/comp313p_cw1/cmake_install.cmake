@@ -49,24 +49,16 @@ endif()
 
 if(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/comp313p_cw1" TYPE FILE FILES
-    "/home/ros_user/COMP313P/workspace/src/comp313p/comp313p_cw1/launch/launch_s02.launch"
+    "/home/ros_user/COMP313P/workspace/src/comp313p/comp313p_cw1/launch/test_scenario.launch"
+    "/home/ros_user/COMP313P/workspace/src/comp313p/comp313p_cw1/launch/factory_scenario.launch"
     "/home/ros_user/COMP313P/workspace/src/comp313p/comp313p_cw1/launch/launch_standalone_planner.launch"
-    "/home/ros_user/COMP313P/workspace/src/comp313p/comp313p_cw1/launch/launch_s01.launch"
     )
 endif()
 
 if(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/comp313p_cw1" TYPE FILE FILES
-    "/home/ros_user/COMP313P/workspace/src/comp313p/comp313p_cw1/scenarios/s01_empty/s01_map.yaml"
     "/home/ros_user/COMP313P/workspace/src/comp313p/comp313p_cw1/scenarios/s01_empty/s01_goals.txt"
-    "/home/ros_user/COMP313P/workspace/src/comp313p/comp313p_cw1/scenarios/s01_empty/s01_map.png"
-    "/home/ros_user/COMP313P/workspace/src/comp313p/comp313p_cw1/scenarios/s01_empty/s01_map.txt"
-    "/home/ros_user/COMP313P/workspace/src/comp313p/comp313p_cw1/scenarios/s01_empty/s01_map_turtle.png"
-    "/home/ros_user/COMP313P/workspace/src/comp313p/comp313p_cw1/scenarios/s02_factory/s02_factory_turtle.png"
-    "/home/ros_user/COMP313P/workspace/src/comp313p/comp313p_cw1/scenarios/s02_factory/s02_factory.txt"
-    "/home/ros_user/COMP313P/workspace/src/comp313p/comp313p_cw1/scenarios/s02_factory/s02_factory.yaml"
-    "/home/ros_user/COMP313P/workspace/src/comp313p/comp313p_cw1/scenarios/s02_factory/s02_factory_goals.txt"
-    "/home/ros_user/COMP313P/workspace/src/comp313p/comp313p_cw1/scenarios/s02_factory/s02_factory.png"
+    "/home/ros_user/COMP313P/workspace/src/comp313p/comp313p_cw1/scenarios/s02_factory/s02_goals.txt"
     )
 endif()
 

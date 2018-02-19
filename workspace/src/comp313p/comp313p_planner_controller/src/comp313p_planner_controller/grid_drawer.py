@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import rospy
 from search_grid import SearchGrid
 from cell import *
 from graphics import Rectangle
@@ -25,7 +26,7 @@ class BaseDrawer(object):
     def open(self):
         self.window = graphics.GraphWin(self.title, self.width, self.height, autoflush = False)
         self.initialize()
-        graphics.update(100)
+        graphics.update(5)
 
     # Close the window
     def close(self):
@@ -68,14 +69,19 @@ class BaseDrawer(object):
         # Overlay on top the start and the goal
         self.drawStartAndGoalGraphics()
 
+        # Flush the graphics
+        self.flushAndUpdateWindow()
+
+    def flushAndUpdateWindow(self):
         # Flush the results
         self.window.update()
+        self.window.flush()
  
     def drawPath(self, path):
         self.drawPathGraphics(path)
         self.drawStartAndGoalGraphics()
-        # Flush the results
-        self.window.flush()        
+        self.window.update()        
+        self.window.flush()
  
     def drawPlanGraphics(self):
         raise NotImplementedError()
@@ -131,6 +137,8 @@ class SearchGridDrawer(BaseDrawer):
         # First iterate over all the cells and mark them up
         cellExtent = self.searchGrid.getExtentInCells()
         for i in range(cellExtent[0]):
+            if rospy.is_shutdown():
+                return
             for j in range(cellExtent[1]):
                 cellLabel = self.searchGrid.getCellFromCoords((i, j)).label
                 if cellLabel == CellLabel.OBSTRUCTED:
@@ -153,6 +161,8 @@ class SearchGridDrawer(BaseDrawer):
             self.rectangles[p.coords[0]][p.coords[1]].setFill(colour)
             
         self.drawStartAndGoalGraphics()
+        self.window.update()
+        self.window.flush()
 
     # Draw the path
     def drawPathGraphics(self, path):

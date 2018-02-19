@@ -40,7 +40,7 @@ template<>
 struct MD5Sum< ::comp313p_planner_controller::Goal > {
   static const char* value()
   {
-    return "a8efc784321f144446c1bf660ebd66ee";
+    return "b457b1c81af64c78b366c8737f41a06f";
   }
 
   static const char* value(const ::comp313p_planner_controller::Goal&) { return value(); }

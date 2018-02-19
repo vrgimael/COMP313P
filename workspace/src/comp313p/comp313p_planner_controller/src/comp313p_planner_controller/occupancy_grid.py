@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import math
+import rospy
+import copy
  
 def clamp(x, minimum, maximum):
     return max(minimum, min(x, maximum))
@@ -29,29 +31,38 @@ class OccupancyGrid(object):
         self.height = heightInCells * self.resolution
         self.extent = (self.width, self.height)
 
-        self.grid = [[0 for y in range(self.heightInCells)] for y in range(self.widthInCells)]
+        self.grid = [[0 for y in range(self.heightInCells)] for x in range(self.widthInCells)]
+        self.complete_grid = []
+        self.scale = 1
 
         self.originalGrid = None
 
+    # Set the scale for the map.
+    def setScale(self, scale):
+        self.scale = scale
+        
     # Set the data from the array received from the map server. The
     # memory layout is different, so we have to flip it here. The map
     # server also scales 100 to mean free and 0 to mean blocked. We
     # use 0 for free and 1 for blocked.
     def setFromDataArrayFromMapServer(self, data):
-        print len(data)
-        print str(self.resolution)
-        print self.width
-        print self.height
-        print self.widthInCells
-        print self.heightInCells
-        
+        print("Length of Map: {}".format(len(data)))
+        print("Map Resolution: {}".format(str(self.resolution)))
+        print("Map Width: {}".format(self.width))
+        print("Map Height: {}".format(self.height))
+        print("Map Width (cells): {}".format(self.widthInCells))
+        print("Map Height (cells): {}".format(self.heightInCells))
+
+        # Get the complete map
         for x in range(self.widthInCells):
             for y in range(self.heightInCells):
-                if (data[len(data)-(self.widthInCells-x-1)-self.heightInCells*y-1] == 100):
+                if (data[len(data)-(self.widthInCells-x-1)-self.widthInCells*y-1] == 100):
                     self.grid[x][self.heightInCells-y-1] = 1
                 else:
                     self.grid[x][self.heightInCells-y-1] = 0
-
+                    
+        self.scaleMap()
+                   
     # Pre process the map so that we expand all the obstacles by a
     # circle of radius robotRadius metres. This is a way to account
     # for the geometry. Technically, this is known as taking the
@@ -83,8 +94,65 @@ class OccupancyGrid(object):
                             newGrid[gridX][gridY] = 1
 
         self.grid = newGrid
-                    
-    # The width of the occupancy map in cells                
+                         
+    def scaleMap(self):
+    
+        planning_map = [[0 for y in range(self.heightInCells/self.scale)] for x in range(self.widthInCells/self.scale)]
+        print("Planning map size\nWidth: {}\nHeight: {}".format(len(planning_map), len(planning_map[0])))
+
+        plan_x_range = range(self.widthInCells)[0::self.scale]
+        plan_y_range = range(self.heightInCells)[0::self.scale]
+
+        # Checks every cell in the range and if any is occupied the scaled is occupied
+        for x in range(len(plan_x_range)):
+            for y in range(len(plan_y_range)):
+
+                # if it is the last planning cell just use that single cell
+                if x == len(plan_x_range) - 1:
+                    x_range = [plan_x_range[x]]
+                else:
+                    x_range = range(plan_x_range[x], plan_x_range[x+1] - 1)
+
+                if y == len(plan_y_range) - 1:
+                    y_range = [plan_y_range[y]]
+                else:
+                    y_range = range(plan_y_range[y], plan_y_range[y + 1] - 1)
+
+                # Start with the planning cell being unoccupied and search for an occupied cell as soon as you find one
+                # stop searching.
+                occupied = 0
+
+                for x_check in x_range:
+
+                    if occupied == 1:
+                        break
+
+                    for y_check in y_range:
+                        value = self.grid[x_check][y_check]
+
+                        if value > 0 or occupied == 1:
+                            occupied = 1
+                            break
+
+                planning_map[x][y] = occupied
+
+        self.grid = planning_map
+
+        if self.originalGrid is None:
+            self.originalGrid = copy.deepcopy(self.grid)
+            
+
+        self.widthInCells = self.widthInCells / self.scale
+        self.heightInCells = self.heightInCells / self.scale
+        self.extentInCells = (self.widthInCells, self.heightInCells)
+
+        self.resolution = self.resolution * self.scale
+
+        self.width = self.widthInCells * self.resolution
+        self.height = self.heightInCells * self.resolution
+        self.extent = (self.width, self.height)
+
+    # The width of the occupancy map in cells
     def getWidth(self):
         return self.width
 

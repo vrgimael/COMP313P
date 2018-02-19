@@ -23,7 +23,7 @@ class PlannerBase(object):
         # Graphics and debug output support
         self.showGraphics = True
         self.pauseTimeInSeconds = 0
-        self.iterationsBetweenGraphicsUpdate = 10
+        self.iterationsBetweenGraphicsUpdate = 10000
         self.iterationsSinceLastGraphicsUpdate = 0
         self.plannerDrawer = None
         self.windowHeightInPixels = 700
@@ -42,6 +42,10 @@ class PlannerBase(object):
     def setShowGraphics(self, showGraphics):
         self.showGraphics = showGraphics
 
+    # Getter to get the graphics
+    def getPlannerDrawer(self):
+        return self.plannerDrawer
+        
     # Change the default window height in pixels
     def setWindowHeightInPixels(self, windowHeightInPixels):
         self.windowHeightInPixels = windowHeightInPixels
@@ -83,12 +87,12 @@ class PlannerBase(object):
     def drawCurrentState(self, forceUpdate=False):
 
         # If graphics is disabled, return
-        if (self.showGraphics == False):
+        if self.showGraphics is False:
             return
             
         # Check if we need to do an update
         self.iterationsSinceLastGraphicsUpdate = self.iterationsSinceLastGraphicsUpdate + 1
-        if (forceUpdate == False):        
+        if forceUpdate is False:     
             if (self.iterationsSinceLastGraphicsUpdate < self.iterationsBetweenGraphicsUpdate):
                 return
 

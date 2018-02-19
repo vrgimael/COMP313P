@@ -3,6 +3,8 @@
           X
           Y-VAL
           Y
+          THETA-VAL
+          THETA
           REACHEDGOAL-VAL
           REACHEDGOAL
 ))

@@ -16,6 +16,11 @@
     :reader y
     :initarg :y
     :type cl:float
+    :initform 0.0)
+   (theta
+    :reader theta
+    :initarg :theta
+    :type cl:float
     :initform 0.0))
 )
 
@@ -36,6 +41,11 @@
 (cl:defmethod y-val ((m <Goal-request>))
   (roslisp-msg-protocol:msg-deprecation-warning "Using old-style slot reader comp313p_planner_controller-srv:y-val is deprecated.  Use comp313p_planner_controller-srv:y instead.")
   (y m))
+
+(cl:ensure-generic-function 'theta-val :lambda-list '(m))
+(cl:defmethod theta-val ((m <Goal-request>))
+  (roslisp-msg-protocol:msg-deprecation-warning "Using old-style slot reader comp313p_planner_controller-srv:theta-val is deprecated.  Use comp313p_planner_controller-srv:theta instead.")
+  (theta m))
 (cl:defmethod roslisp-msg-protocol:serialize ((msg <Goal-request>) ostream)
   "Serializes a message object of type '<Goal-request>"
   (cl:let ((bits (roslisp-utils:encode-single-float-bits (cl:slot-value msg 'x))))
@@ -44,6 +54,11 @@
     (cl:write-byte (cl:ldb (cl:byte 8 16) bits) ostream)
     (cl:write-byte (cl:ldb (cl:byte 8 24) bits) ostream))
   (cl:let ((bits (roslisp-utils:encode-single-float-bits (cl:slot-value msg 'y))))
+    (cl:write-byte (cl:ldb (cl:byte 8 0) bits) ostream)
+    (cl:write-byte (cl:ldb (cl:byte 8 8) bits) ostream)
+    (cl:write-byte (cl:ldb (cl:byte 8 16) bits) ostream)
+    (cl:write-byte (cl:ldb (cl:byte 8 24) bits) ostream))
+  (cl:let ((bits (roslisp-utils:encode-single-float-bits (cl:slot-value msg 'theta))))
     (cl:write-byte (cl:ldb (cl:byte 8 0) bits) ostream)
     (cl:write-byte (cl:ldb (cl:byte 8 8) bits) ostream)
     (cl:write-byte (cl:ldb (cl:byte 8 16) bits) ostream)
@@ -63,6 +78,12 @@
       (cl:setf (cl:ldb (cl:byte 8 16) bits) (cl:read-byte istream))
       (cl:setf (cl:ldb (cl:byte 8 24) bits) (cl:read-byte istream))
     (cl:setf (cl:slot-value msg 'y) (roslisp-utils:decode-single-float-bits bits)))
+    (cl:let ((bits 0))
+      (cl:setf (cl:ldb (cl:byte 8 0) bits) (cl:read-byte istream))
+      (cl:setf (cl:ldb (cl:byte 8 8) bits) (cl:read-byte istream))
+      (cl:setf (cl:ldb (cl:byte 8 16) bits) (cl:read-byte istream))
+      (cl:setf (cl:ldb (cl:byte 8 24) bits) (cl:read-byte istream))
+    (cl:setf (cl:slot-value msg 'theta) (roslisp-utils:decode-single-float-bits bits)))
   msg
 )
 (cl:defmethod roslisp-msg-protocol:ros-datatype ((msg (cl:eql '<Goal-request>)))
@@ -73,18 +94,19 @@
   "comp313p_planner_controller/GoalRequest")
 (cl:defmethod roslisp-msg-protocol:md5sum ((type (cl:eql '<Goal-request>)))
   "Returns md5sum for a message object of type '<Goal-request>"
-  "a8efc784321f144446c1bf660ebd66ee")
+  "b457b1c81af64c78b366c8737f41a06f")
 (cl:defmethod roslisp-msg-protocol:md5sum ((type (cl:eql 'Goal-request)))
   "Returns md5sum for a message object of type 'Goal-request"
-  "a8efc784321f144446c1bf660ebd66ee")
+  "b457b1c81af64c78b366c8737f41a06f")
 (cl:defmethod roslisp-msg-protocol:message-definition ((type (cl:eql '<Goal-request>)))
   "Returns full string definition for message of type '<Goal-request>"
-  (cl:format cl:nil "float32 x~%float32 y~%~%~%"))
+  (cl:format cl:nil "float32 x~%float32 y~%float32 theta~%~%~%"))
 (cl:defmethod roslisp-msg-protocol:message-definition ((type (cl:eql 'Goal-request)))
   "Returns full string definition for message of type 'Goal-request"
-  (cl:format cl:nil "float32 x~%float32 y~%~%~%"))
+  (cl:format cl:nil "float32 x~%float32 y~%float32 theta~%~%~%"))
 (cl:defmethod roslisp-msg-protocol:serialization-length ((msg <Goal-request>))
   (cl:+ 0
+     4
      4
      4
 ))
@@ -93,6 +115,7 @@
   (cl:list 'Goal-request
     (cl:cons ':x (x msg))
     (cl:cons ':y (y msg))
+    (cl:cons ':theta (theta msg))
 ))
 ;//! \htmlinclude Goal-response.msg.html
 
@@ -133,10 +156,10 @@
   "comp313p_planner_controller/GoalResponse")
 (cl:defmethod roslisp-msg-protocol:md5sum ((type (cl:eql '<Goal-response>)))
   "Returns md5sum for a message object of type '<Goal-response>"
-  "a8efc784321f144446c1bf660ebd66ee")
+  "b457b1c81af64c78b366c8737f41a06f")
 (cl:defmethod roslisp-msg-protocol:md5sum ((type (cl:eql 'Goal-response)))
   "Returns md5sum for a message object of type 'Goal-response"
-  "a8efc784321f144446c1bf660ebd66ee")
+  "b457b1c81af64c78b366c8737f41a06f")
 (cl:defmethod roslisp-msg-protocol:message-definition ((type (cl:eql '<Goal-response>)))
   "Returns full string definition for message of type '<Goal-response>"
   (cl:format cl:nil "bool reachedGoal~%~%~%~%"))

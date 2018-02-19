@@ -20,17 +20,19 @@
 
 (defclass comp313p_planner_controller::GoalRequest
   :super ros::object
-  :slots (_x _y ))
+  :slots (_x _y _theta ))
 
 (defmethod comp313p_planner_controller::GoalRequest
   (:init
    (&key
     ((:x __x) 0.0)
     ((:y __y) 0.0)
+    ((:theta __theta) 0.0)
     )
    (send-super :init)
    (setq _x (float __x))
    (setq _y (float __y))
+   (setq _theta (float __theta))
    self)
   (:x
    (&optional __x)
@@ -38,12 +40,17 @@
   (:y
    (&optional __y)
    (if __y (setq _y __y)) _y)
+  (:theta
+   (&optional __theta)
+   (if __theta (setq _theta __theta)) _theta)
   (:serialization-length
    ()
    (+
     ;; float32 _x
     4
     ;; float32 _y
+    4
+    ;; float32 _theta
     4
     ))
   (:serialize
@@ -54,6 +61,8 @@
        (sys::poke _x (send s :buffer) (send s :count) :float) (incf (stream-count s) 4)
      ;; float32 _y
        (sys::poke _y (send s :buffer) (send s :count) :float) (incf (stream-count s) 4)
+     ;; float32 _theta
+       (sys::poke _theta (send s :buffer) (send s :count) :float) (incf (stream-count s) 4)
      ;;
      (if (null strm) (get-output-stream-string s))))
   (:deserialize
@@ -62,6 +71,8 @@
      (setq _x (sys::peek buf ptr- :float)) (incf ptr- 4)
    ;; float32 _y
      (setq _y (sys::peek buf ptr- :float)) (incf ptr- 4)
+   ;; float32 _theta
+     (setq _theta (sys::peek buf ptr- :float)) (incf ptr- 4)
    ;;
    self)
   )
@@ -107,7 +118,7 @@
   :super ros::object
   :slots ())
 
-(setf (get comp313p_planner_controller::Goal :md5sum-) "a8efc784321f144446c1bf660ebd66ee")
+(setf (get comp313p_planner_controller::Goal :md5sum-) "b457b1c81af64c78b366c8737f41a06f")
 (setf (get comp313p_planner_controller::Goal :datatype-) "comp313p_planner_controller/Goal")
 (setf (get comp313p_planner_controller::Goal :request) comp313p_planner_controller::GoalRequest)
 (setf (get comp313p_planner_controller::Goal :response) comp313p_planner_controller::GoalResponse)
@@ -115,21 +126,23 @@
 (defmethod comp313p_planner_controller::GoalRequest
   (:response () (instance comp313p_planner_controller::GoalResponse :init)))
 
-(setf (get comp313p_planner_controller::GoalRequest :md5sum-) "a8efc784321f144446c1bf660ebd66ee")
+(setf (get comp313p_planner_controller::GoalRequest :md5sum-) "b457b1c81af64c78b366c8737f41a06f")
 (setf (get comp313p_planner_controller::GoalRequest :datatype-) "comp313p_planner_controller/GoalRequest")
 (setf (get comp313p_planner_controller::GoalRequest :definition-)
       "float32 x
 float32 y
+float32 theta
 ---
 bool reachedGoal
 
 ")
 
-(setf (get comp313p_planner_controller::GoalResponse :md5sum-) "a8efc784321f144446c1bf660ebd66ee")
+(setf (get comp313p_planner_controller::GoalResponse :md5sum-) "b457b1c81af64c78b366c8737f41a06f")
 (setf (get comp313p_planner_controller::GoalResponse :datatype-) "comp313p_planner_controller/GoalResponse")
 (setf (get comp313p_planner_controller::GoalResponse :definition-)
       "float32 x
 float32 y
+float32 theta
 ---
 bool reachedGoal
 
@@ -137,6 +150,6 @@ bool reachedGoal
 
 
 
-(provide :comp313p_planner_controller/Goal "a8efc784321f144446c1bf660ebd66ee")
+(provide :comp313p_planner_controller/Goal "b457b1c81af64c78b366c8737f41a06f")
 
 

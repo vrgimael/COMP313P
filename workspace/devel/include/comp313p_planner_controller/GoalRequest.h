@@ -25,11 +25,13 @@ struct GoalRequest_
 
   GoalRequest_()
     : x(0.0)
-    , y(0.0)  {
+    , y(0.0)
+    , theta(0.0)  {
     }
   GoalRequest_(const ContainerAllocator& _alloc)
     : x(0.0)
-    , y(0.0)  {
+    , y(0.0)
+    , theta(0.0)  {
   (void)_alloc;
     }
 
@@ -40,6 +42,9 @@ struct GoalRequest_
 
    typedef float _y_type;
   _y_type y;
+
+   typedef float _theta_type;
+  _theta_type theta;
 
 
 
@@ -118,12 +123,12 @@ struct MD5Sum< ::comp313p_planner_controller::GoalRequest_<ContainerAllocator> >
 {
   static const char* value()
   {
-    return "ff8d7d66dd3e4b731ef14a45d38888b6";
+    return "a130bc60ee6513855dc62ea83fcc5b20";
   }
 
   static const char* value(const ::comp313p_planner_controller::GoalRequest_<ContainerAllocator>&) { return value(); }
-  static const uint64_t static_value1 = 0xff8d7d66dd3e4b73ULL;
-  static const uint64_t static_value2 = 0x1ef14a45d38888b6ULL;
+  static const uint64_t static_value1 = 0xa130bc60ee651385ULL;
+  static const uint64_t static_value2 = 0x5dc62ea83fcc5b20ULL;
 };
 
 template<class ContainerAllocator>
@@ -144,6 +149,7 @@ struct Definition< ::comp313p_planner_controller::GoalRequest_<ContainerAllocato
   {
     return "float32 x\n\
 float32 y\n\
+float32 theta\n\
 ";
   }
 
@@ -164,6 +170,7 @@ namespace serialization
     {
       stream.next(m.x);
       stream.next(m.y);
+      stream.next(m.theta);
     }
 
     ROS_DECLARE_ALLINONE_SERIALIZER
@@ -186,6 +193,8 @@ struct Printer< ::comp313p_planner_controller::GoalRequest_<ContainerAllocator> 
     Printer<float>::stream(s, indent + "  ", v.x);
     s << indent << "y: ";
     Printer<float>::stream(s, indent + "  ", v.y);
+    s << indent << "theta: ";
+    Printer<float>::stream(s, indent + "  ", v.theta);
   }
 };
 
