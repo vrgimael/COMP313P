@@ -1,8 +1,0 @@
-prefix=/home/ros_user/COMP313P/workspace/devel
-
-Name: comp313p_planner_controller
-Description: Description of comp313p_planner_controller
-Version: 1.0.0
-Cflags: -I/home/ros_user/COMP313P/workspace/devel/include
-Libs: -L/home/ros_user/COMP313P/workspace/devel/lib 
-Requires: 
