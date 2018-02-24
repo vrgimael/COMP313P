@@ -15,6 +15,9 @@ occupancyGrid = OccupancyGrid(21, 21, 0.5)
 for y in xrange(1, 19):
     occupancyGrid.setCell(11, y, 1)
 
+for x in xrange(0, 11):
+    occupancyGrid.setCell(x, 10, 1)
+
 # Start and goal cells
 start = (3, 18)
 goal = (20, 0)
