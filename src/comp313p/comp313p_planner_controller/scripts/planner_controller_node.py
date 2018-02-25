@@ -18,6 +18,10 @@ from comp313p_planner_controller.occupancy_grid import OccupancyGrid
 
 # The planner used to figure out the path
 from comp313p_planner_controller.fifo_planner import FIFOPlanner
+from comp313p_planner_controller.lifo_planner import LIFOPlanner
+from comp313p_planner_controller.DijkstraPlanner import DijkstraPlanner
+from comp313p_planner_controller.BestFirstPlanner import BestFirstPlanner
+from comp313p_planner_controller.AStarPlanner import AStarPlanner
 
 # The controller to drive the robot along the path
 from comp313p_planner_controller.move2goal_controller import Move2GoalController
@@ -53,8 +57,14 @@ class PlannerControllerNode(object):
 
     def createPlanner(self):
         self.planner = FIFOPlanner('FIFO', self.occupancyGrid)
+        #self.planner = LIFOPlanner('LIFO', self.occupancyGrid)
+        #self.planner = DijkstraPlanner('Dijkstra', self.occupancyGrid)
+        #self.planner = BestFirstPlanner('Best First', self.occupancyGrid)
+        #['Zero', 'Constant', 'Euclidean', 'Manhattan', 'Octile']
+        heuristic = 'Zero'
+        #self.planner = AStarPlanner(str('A Star Algorithm - Heuristic: ' + str(heuristic)), self.occupancyGrid, heuristic, hscale=1/100.0)
         self.planner.setPauseTime(0)
-        self.planner.windowHeightInPixels = rospy.get_param('maximum_window_height_in_pixels', 700)
+        self.planner.windowHeightInPixels = rospy.get_param('maximum_window_height_in_pixels', 400)
         
     def createRobotController(self):
         self.robotController = Move2GoalController(self.occupancyGrid)

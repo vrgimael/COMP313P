@@ -79,7 +79,7 @@ class ControllerBase(object):
         for waypointNumber in range(0, len(path.waypoints)):
             cell = path.waypoints[waypointNumber]
             waypoint = self.occupancyGrid.getWorldCoordinatesFromCellCoordinates(cell.coords)
-            rospy.loginfo("Driving to waypoint (%f, %f)", waypoint[0], waypoint[1])
+            #rospy.loginfo("Driving to waypoint (%f, %f)", waypoint[0], waypoint[1])
             self.driveToWaypoint(waypoint)
             # Handle ^C
             if rospy.is_shutdown() is True:
