@@ -4,6 +4,7 @@
 # and its label
 
 from enum import Enum
+import math
 
 class CellLabel(Enum):
     OBSTRUCTED=-3
@@ -33,3 +34,12 @@ class Cell(object):
         # it, this is the necessary initial condition.
         self.pathCost = float("inf")
 
+    def distanceToCell(this, anotherCell):
+        x = this.coords[0] - anotherCell.coords[0]
+        y = this.coords[1] - anotherCell.coords[1]
+        return math.sqrt(x*x + y*y)
+    
+    def angleToCell(this, anotherCell):
+        x = anotherCell.coords[0] - this.coords[0]
+        y = anotherCell.coords[1] - this.coords[1]
+        return math.degrees(math.atan2(y,x))

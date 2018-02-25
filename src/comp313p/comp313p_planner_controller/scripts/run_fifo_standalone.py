@@ -15,16 +15,13 @@ occupancyGrid = OccupancyGrid(21, 21, 0.5)
 for y in xrange(1, 19):
     occupancyGrid.setCell(11, y, 1)
 
-for x in xrange(0, 11):
-    occupancyGrid.setCell(x, 10, 1)
-
 # Start and goal cells
 start = (3, 18)
 goal = (20, 0)
 
 # Create the planner. The first field is the title which will appear in the
 # graphics window, the second the occupancy grid used.
-planner = FIFOPlanner('Depth First Search', occupancyGrid);
+planner = FIFOPlanner('Breadth First Search', occupancyGrid);
 
 # This causes the planner to slow down and pause for things like key entries
 planner.setRunInteractively(True)
