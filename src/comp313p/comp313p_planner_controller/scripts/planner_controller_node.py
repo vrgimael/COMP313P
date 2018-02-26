@@ -56,13 +56,13 @@ class PlannerControllerNode(object):
         self.occupancyGrid.expandObstaclesToAccountForCircularRobotOfRadius(0.2)
 
     def createPlanner(self):
-        self.planner = FIFOPlanner('FIFO', self.occupancyGrid)
+        #self.planner = FIFOPlanner('FIFO', self.occupancyGrid)
         #self.planner = LIFOPlanner('LIFO', self.occupancyGrid)
         #self.planner = DijkstraPlanner('Dijkstra', self.occupancyGrid)
         #self.planner = BestFirstPlanner('Best First', self.occupancyGrid)
         #['Zero', 'Constant', 'Euclidean', 'Manhattan', 'Octile']
-        heuristic = 'Zero'
-        #self.planner = AStarPlanner(str('A Star Algorithm - Heuristic: ' + str(heuristic)), self.occupancyGrid, heuristic, hscale=1/100.0)
+        heuristic = 'Octile'
+        self.planner = AStarPlanner(str('A Star Algorithm - Heuristic: ' + str(heuristic)), self.occupancyGrid, heuristic, hscale=1/100.0)
         self.planner.setPauseTime(0)
         self.planner.windowHeightInPixels = rospy.get_param('maximum_window_height_in_pixels', 400)
         
