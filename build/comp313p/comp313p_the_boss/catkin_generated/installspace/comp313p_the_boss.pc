@@ -1,8 +1,0 @@
-prefix=/home/ros_user/COMP313P/install
-
-Name: comp313p_the_boss
-Description: Description of comp313p_the_boss
-Version: 0.0.0
-Cflags: 
-Libs: -L/home/ros_user/COMP313P/install/lib 
-Requires: 

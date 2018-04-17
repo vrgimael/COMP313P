@@ -1,7 +1,0 @@
-# pack-refs with: peeled fully-peeled 
-17c1d1175fd0a415029f3f461fe124af52327b40 refs/remotes/origin/cw1
-9f62cf3885866b61041c53c8f1d7a5b82aa1ae4d refs/remotes/origin/cw1_dev
-638b617a5efd1fe8193d6040155b37901ca47e40 refs/remotes/origin/cw2
-558665fca9d5df56243261ac9d52771600232611 refs/remotes/origin/dev
-4e1f270c9b876ea7af4b8c545244f7b0c4aa058d refs/remotes/origin/master
-40994d7c50c79ec58de7bb903efbc26a62ddb769 refs/remotes/origin/position_controller
