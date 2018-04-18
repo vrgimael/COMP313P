@@ -1,8 +1,0 @@
-prefix=/home/victor/COMP313P/cw1_ws/install
-
-Name: comp313p_cw2
-Description: Description of comp313p_cw2
-Version: 2018.3.1
-Cflags: 
-Libs: -L/home/victor/COMP313P/cw1_ws/install/lib 
-Requires: 

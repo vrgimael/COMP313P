@@ -1,8 +1,0 @@
-prefix=/home/victor/COMP313P/cw1_ws/install
-
-Name: stdr_resources
-Description: Description of stdr_resources
-Version: 0.3.2
-Cflags: 
-Libs: -L/home/victor/COMP313P/cw1_ws/install/lib 
-Requires: 
