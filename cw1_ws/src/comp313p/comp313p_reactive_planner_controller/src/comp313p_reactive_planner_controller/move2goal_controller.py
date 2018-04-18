@@ -18,7 +18,7 @@ class Move2GoalController(ControllerBase):
 
     def __init__(self, occupancyGrid):
         ControllerBase.__init__(self, occupancyGrid)
-        
+
         # Get the proportional gain settings
         self.distanceErrorGain = rospy.get_param('distance_error_gain', 1)
         self.angleErrorGain = rospy.get_param('angle_error_gain', 4)
@@ -36,7 +36,7 @@ class Move2GoalController(ControllerBase):
             rospy.wait_for_service('change_mapper_state')
             self.changeMapperStateService = rospy.ServiceProxy('change_mapper_state', ChangeMapperState)
             rospy.loginfo('Got the change_mapper_state service')
-   
+
     def get_distance(self, goal_x, goal_y):
         distance = sqrt(pow((goal_x - self.pose.x), 2) + pow((goal_y - self.pose.y), 2))
         return distance
@@ -48,7 +48,7 @@ class Move2GoalController(ControllerBase):
         elif(delta > math.pi):
             delta = delta - 2.0*math.pi
         return delta
-        
+
     def driveToWaypoint(self, waypoint):
         vel_msg = Twist()
 
@@ -56,7 +56,7 @@ class Move2GoalController(ControllerBase):
         dY = waypoint[1] - self.pose.y
         distanceError = sqrt(dX * dX + dY * dY)
         angleError = self.shortestAngularDistance(self.pose.theta, atan2(dY, dX))
-       
+
         while (distanceError >= self.distanceErrorTolerance) & (not self.abortCurrentGoal) & (not rospy.is_shutdown()):
             #print("Current Pose: x: {}, y:{} , theta: {}\nGoal: x: {}, y: {}\n".format(self.pose.x, self.pose.y,
             #                                                                           self.pose.theta, waypoint[0],
@@ -66,7 +66,7 @@ class Move2GoalController(ControllerBase):
             # Proportional Controller
             # linear velocity in the x-axis: only switch on when the angular error is sufficiently small
             if math.fabs(angleError) < self.driveAngleErrorTolerance:
-                vel_msg.linear.x = max(0.0, min(self.distanceErrorGain * distanceError, 10.0))
+                vel_msg.linear.x = max(0.0, min(self.distanceErrorGain * distanceError * 1, 10.0))
                 vel_msg.linear.y = 0
                 vel_msg.linear.z = 0
 
@@ -76,7 +76,7 @@ class Move2GoalController(ControllerBase):
             vel_msg.angular.z = max(-5.0, min(self.angleErrorGain * angleError, 5.0))
 
 
-            #print("Linear Velocity: {}\nAngular Velocity: {}\n\n".format(vel_msg.linear.x, math.degrees(vel_msg.angular.z)))
+            # print("Linear Velocity: {}\nAngular Velocity: {}\n\n".format(vel_msg.linear.x, math.degrees(vel_msg.angular.z)))
 
             # Toggle switching the mapping on and off, depending on
             # how fast the robot is turning. This has to happen first
@@ -89,12 +89,12 @@ class Move2GoalController(ControllerBase):
                 elif (self.mappingState is False) and (abs(vel_msg.angular.z) < math.radians(0.1)):
                     self.mappingState = True
                     self.changeMapperStateService(True)
-            
+
             # Publishing our vel_msg
             self.velocityPublisher.publish(vel_msg)
             if (self.plannerDrawer is not None):
                 self.plannerDrawer.flushAndUpdateWindow()
-                
+
             self.rate.sleep()
 
             # Check if the occupancy grid has changed. If so, monitor if we can still reach the
@@ -137,7 +137,7 @@ class Move2GoalController(ControllerBase):
             self.velocityPublisher.publish(vel_msg)
             if (self.plannerDrawer is not None):
                 self.plannerDrawer.flushAndUpdateWindow()
-                
+
             self.rate.sleep()
             angleError = self.shortestAngularDistance(self.pose.theta, goalOrientation)
 
