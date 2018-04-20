@@ -2,7 +2,7 @@
 import rospy
 from geometry_msgs.msg  import Twist
 from geometry_msgs.msg  import Pose2D
-from std_msgs.msg import String
+from std_msgs.msg import String, Bool
 from nav_msgs.msg import Odometry
 from math import pow,atan2,sqrt,pi
 from planned_path import PlannedPath
@@ -35,13 +35,14 @@ class ControllerBase(object):
         # Store the occupancy grid. This is dynamically updated as a result of new map
         # information becoming available.
         self.occupancyGrid = occupancyGrid
-        
+
         # This is the rate at which we broadcast updates to the simulator in Hz.
         self.rate = rospy.Rate(10)
 
         # This flag says if the current goal should be aborted
         self.abortCurrentGoal = False
-        
+
+        self.skipGoalSubscriber = rospy.Subscriber('/robot0/skip_goal', Bool, self.abortGoal)
 
     # Get the pose of the robot. Store this in a Pose2D structure because
     # this is easy to use. Use radians for angles because these are used
@@ -53,7 +54,7 @@ class ControllerBase(object):
 
         position = odometryPose.position
         orientation = odometryPose.orientation
-        
+
         pose.x = position.x
         pose.y = position.y
         pose.theta = 2 * atan2(orientation.z, orientation.w)
@@ -66,7 +67,7 @@ class ControllerBase(object):
     # If set to true, the robot should abort driving to the current goal.
     def stopDrivingToCurrentGoal(self):
         self.abortCurrentGoal = True
-    
+
     # Handle the logic of driving the robot to the next waypoint
     def driveToWaypoint(self, waypoint):
         raise NotImplementedError()
@@ -79,6 +80,12 @@ class ControllerBase(object):
     def rotateToGoalOrientation(self, waypoint):
         raise NotImplementedError()
 
+
+    def abortGoal(self, abort):
+        if abort:
+            print 'aborting current goal'
+            self.stopDrivingToCurrentGoal()
+
     # Drive to each waypoint in turn. Unfortunately we have to add
     # the planner drawer because we have to keep updating it to
     # make sure the graphics are redrawn properly.
@@ -88,10 +95,13 @@ class ControllerBase(object):
         self.plannerDrawer = plannerDrawer
 
         rospy.loginfo('Driving path to goal with ' + str(len(path.waypoints)) + ' waypoint(s)')
-        
+
         # Drive to each waypoint in turn
         for waypointNumber in range(0, len(path.waypoints)):
             cell = path.waypoints[waypointNumber]
+
+            # skip waypoints close to goal, we don't need to get there but to see it
+
             waypoint = self.occupancyGrid.getWorldCoordinatesFromCellCoordinates(cell.coords)
 
             rospy.loginfo("Driving to waypoint (%f, %f)", waypoint[0], waypoint[1])
@@ -103,13 +113,12 @@ class ControllerBase(object):
             if self.driveToWaypoint(waypoint) is False:
                 self.stopRobot()
                 return False
-                
+
             # Handle ^C
             if rospy.is_shutdown() is True:
                 return False
 
         rospy.loginfo('Rotating to goal orientation (' + str(goalOrientation) + ')')
-        
+
         # Finish off by rotating the robot to the final configuration
         return self.rotateToGoalOrientation(goalOrientation)
- 

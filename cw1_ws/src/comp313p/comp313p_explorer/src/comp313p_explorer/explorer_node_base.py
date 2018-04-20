@@ -50,12 +50,12 @@ class ExplorerNodeBase(object):
         while mapUpdate.initialMapUpdate.isPriorMap is True:
             self.kickstartSimulator()
             mapUpdate = mapRequestService(True)
-            
+
         self.mapUpdateCallback(mapUpdate.initialMapUpdate)
-        
+
     def mapUpdateCallback(self, msg):
-        rospy.loginfo("map update received")
-        
+        # rospy.loginfo("map update received")
+
         # If the occupancy grids do not exist, create them
         if self.occupancyGrid is None:
             self.occupancyGrid = OccupancyGrid.fromMapUpdateMessage(msg)
@@ -64,7 +64,7 @@ class ExplorerNodeBase(object):
         # Update the grids
         self.occupancyGrid.updateGridFromVector(msg.occupancyGrid)
         self.deltaOccupancyGrid.updateGridFromVector(msg.deltaOccupancyGrid)
-        
+
         # Update the frontiers
         self.updateFrontiers()
 
@@ -85,7 +85,7 @@ class ExplorerNodeBase(object):
             | self.checkIfCellIsUnknown(x, y, 1, -1) | self.checkIfCellIsUnknown(x, y, 1, 0) \
             | self.checkIfCellIsUnknown(x, y, 1, 1) | self.checkIfCellIsUnknown(x, y, 0, 1) \
             | self.checkIfCellIsUnknown(x, y, -1, 1) | self.checkIfCellIsUnknown(x, y, -1, 0)
-            
+
     def checkIfCellIsUnknown(self, x, y, offsetX, offsetY):
         newX = x + offsetX
         newY = y + offsetY
@@ -111,7 +111,7 @@ class ExplorerNodeBase(object):
 
         # If we don't need to do an update, simply flush the graphics
         # to make sure everything appears properly in VNC
-        
+
         if self.visualisationUpdateRequired is False:
 
             if self.occupancyGridDrawer is not None:
@@ -121,7 +121,7 @@ class ExplorerNodeBase(object):
                 self.deltaOccupancyGridDrawer.flushAndUpdateWindow()
 
             return
-                
+
 
         # Update the visualisation; note that we can only create the
         # drawers here because we don't know the size of the map until
@@ -161,7 +161,7 @@ class ExplorerNodeBase(object):
         velocityMessage = Twist()
         velocityPublisher.publish(velocityMessage)
         rospy.sleep(1)
-            
+
     class ExplorerThread(threading.Thread):
         def __init__(self, explorer):
             threading.Thread.__init__(self)
@@ -182,11 +182,6 @@ class ExplorerNodeBase(object):
 
             while (rospy.is_shutdown() is False) & (self.completed is False):
 
-                # Special case. If this is the first time everything
-                # has started, stdr needs a kicking to generate laser
-                # messages. To do this, we get the robot to
-                
-
                 # Create a new robot waypoint if required
                 newDestinationAvailable, newDestination = self.explorer.chooseNewDestination()
 
@@ -198,18 +193,19 @@ class ExplorerNodeBase(object):
                     self.explorer.destinationReached(newDestination, attempt)
                 else:
                     self.completed = True
-                    
-       
+                    print 'Done exploring!'
+
+
     def run(self):
 
         explorerThread = ExplorerNodeBase.ExplorerThread(self)
 
         keepRunning = True
-        
+
         while (rospy.is_shutdown() is False) & (keepRunning is True):
 
             rospy.sleep(0.1)
-            
+
             self.updateVisualisation()
 
             if self.occupancyGrid is None:
@@ -221,6 +217,3 @@ class ExplorerNodeBase(object):
             if explorerThread.hasCompleted() is True:
                 explorerThread.join()
                 keepRunning = False
-
-            
-            

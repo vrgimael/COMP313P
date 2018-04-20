@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import rospy
 from geometry_msgs.msg  import Twist
-from geometry_msgs.msg  import Pose
+from geometry_msgs.msg  import Pose, Pose2D
 from math import pow,atan2,sqrt
 from comp313p_reactive_planner_controller.planned_path import PlannedPath
 from comp313p_reactive_planner_controller.controller_base import ControllerBase
@@ -17,6 +17,8 @@ import angles
 class Move2GoalController(ControllerBase):
 
     def __init__(self, occupancyGrid):
+        print '> > > > > [__init__] Move2GoalController'
+
         ControllerBase.__init__(self, occupancyGrid)
 
         # Get the proportional gain settings
@@ -37,6 +39,14 @@ class Move2GoalController(ControllerBase):
             self.changeMapperStateService = rospy.ServiceProxy('change_mapper_state', ChangeMapperState)
             rospy.loginfo('Got the change_mapper_state service')
 
+        # Analytics
+        self.start_time = rospy.get_rostime().secs
+        self.distance_travelled = 0.0
+        self.angle_turned = 0.0
+        self.total_waypoints = 0
+        self.posePublisher = rospy.Publisher('/robot0/pose', Pose2D, queue_size=10)
+
+
     def get_distance(self, goal_x, goal_y):
         distance = sqrt(pow((goal_x - self.pose.x), 2) + pow((goal_y - self.pose.y), 2))
         return distance
@@ -49,7 +59,29 @@ class Move2GoalController(ControllerBase):
             delta = delta - 2.0*math.pi
         return delta
 
+    def getLoopTime(self, last_loop):
+        now = rospy.get_rostime().nsecs
+        tmp_time = now
+        diff = now - last_loop
+        if diff < 0:
+            diff += 1000000000 # fixes nanoseconds reset
+        time = diff / 100000 # converts to something that makes sense
+        return time
+
+    def registerAngleTurned(self, time, angular_velocity):
+        angle_this_loop = abs(angular_velocity) * time * 0.0001 # somehow this number works
+        self.angle_turned += math.degrees(angle_this_loop)
+
     def driveToWaypoint(self, waypoint):
+        # print '> > > Driving to new waypoint'
+        self.total_waypoints += 1
+        self.posePublisher.publish(self.pose)
+
+        print '> > > Time elapsed: ' + str(rospy.get_rostime().secs - self.start_time) + 's'
+        print '> > > Total waypoints: ' + str(self.total_waypoints)
+        print '> > > Total distance travelled: ' + str(self.distance_travelled)
+        print '> > > Total angle turned: ' + str(self.angle_turned)
+
         vel_msg = Twist()
 
         dX = waypoint[0] - self.pose.x
@@ -57,16 +89,30 @@ class Move2GoalController(ControllerBase):
         distanceError = sqrt(dX * dX + dY * dY)
         angleError = self.shortestAngularDistance(self.pose.theta, atan2(dY, dX))
 
+        tmp_time = rospy.get_rostime().nsecs
+
         while (distanceError >= self.distanceErrorTolerance) & (not self.abortCurrentGoal) & (not rospy.is_shutdown()):
             #print("Current Pose: x: {}, y:{} , theta: {}\nGoal: x: {}, y: {}\n".format(self.pose.x, self.pose.y,
             #                                                                           self.pose.theta, waypoint[0],
             #                                                                           waypoint[1]))
             #print("Distance Error: {}\nAngular Error: {}".format(distanceError, angleError))
 
+            time = self.getLoopTime(tmp_time)
+            tmp_time = rospy.get_rostime().nsecs
+
+            distance_this_loop = abs(vel_msg.linear.x) * time
+
+            self.distance_travelled += distance_this_loop * 0.05 / 500 # cell ratio and map grid size correction
+
+            # print 'vel_msg.angular.z moving: ' + str(vel_msg.angular.z)
+            # print 'vel_msg.linear.x: ' + str(vel_msg.linear.x)
+
+            self.registerAngleTurned(time, vel_msg.angular.z)
+
             # Proportional Controller
             # linear velocity in the x-axis: only switch on when the angular error is sufficiently small
             if math.fabs(angleError) < self.driveAngleErrorTolerance:
-                vel_msg.linear.x = max(0.0, min(self.distanceErrorGain * distanceError * 1, 10.0))
+                vel_msg.linear.x = max(0.0, min(self.distanceErrorGain * distanceError * 1.5, 10.0))
                 vel_msg.linear.y = 0
                 vel_msg.linear.z = 0
 
@@ -75,8 +121,8 @@ class Move2GoalController(ControllerBase):
             vel_msg.angular.y = 0
             vel_msg.angular.z = max(-5.0, min(self.angleErrorGain * angleError, 5.0))
 
-
             # print("Linear Velocity: {}\nAngular Velocity: {}\n\n".format(vel_msg.linear.x, math.degrees(vel_msg.angular.z)))
+
 
             # Toggle switching the mapping on and off, depending on
             # how fast the robot is turning. This has to happen first
@@ -124,14 +170,22 @@ class Move2GoalController(ControllerBase):
             self.mappingState = False
             self.changeMapperStateService(False)
 
+        tmp_time = rospy.get_rostime().nsecs
+
         while (math.fabs(angleError) >= self.goalAngleErrorTolerance) & (not self.abortCurrentGoal) \
               & (not rospy.is_shutdown()):
             #print 'Angular Error: ' + str(angleError)
+
+            time = self.getLoopTime(tmp_time)
+            tmp_time = rospy.get_rostime().nsecs
+            self.registerAngleTurned(time, vel_msg.angular.z)
 
             # angular velocity in the z-axis:
             vel_msg.angular.x = 0
             vel_msg.angular.y = 0
             vel_msg.angular.z = max(-5.0, min(self.angleErrorGain * angleError, 5.0))
+
+            # print 'angle when rotating: ' + str(vel_msg.angular.z)
 
             # Publishing our vel_msg
             self.velocityPublisher.publish(vel_msg)

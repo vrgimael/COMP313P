@@ -14,8 +14,10 @@ class GeneralForwardSearchAlgorithm(PlannerBase):
     # This class implements the basic framework for LaValle's general
     # template for forward search. It includes a lot of methods for
     # managing the graphical output as well
-    
+
     def __init__(self, title, occupancyGrid):
+        print '> > > > > [__init__] GeneralForwardSearchAlgorithm'
+
         PlannerBase.__init__(self, title, occupancyGrid)
 
         # If the goal cell is occupied, the planner will still find a
@@ -27,9 +29,12 @@ class GeneralForwardSearchAlgorithm(PlannerBase):
         # Flag to store if the last plan was successful
         self.goalReached = None
 
+        # Analytics
+        self.total_travel_cost = 0
+
     def setRemoveGoalCellFromPathIfOccupied(self, newValue):
         self.removeGoalCellFromPathIfOccupied = newValue
-        
+
     # These methods manage the queue of cells to be visied.
     def pushCellOntoQueue(self, cell):
         raise NotImplementedError()
@@ -64,7 +69,7 @@ class GeneralForwardSearchAlgorithm(PlannerBase):
     # immediate neighbours have been visited.
     def markCellAsDead(self, cell):
         cell.label = CellLabel.DEAD
-    
+
     # Handle the case that a cell has been visited already.
     def resolveDuplicate(self, cell):
         raise NotImplementedError()
@@ -72,22 +77,22 @@ class GeneralForwardSearchAlgorithm(PlannerBase):
     # Get the search grid
     def getSearchGrid(self):
         return self.searchGrid
-    
+
     # Compute the additive cost of performing a step from the parent to the
     # current cell. This calculation is carried out the same way no matter
     # what heuristics, etc. are used
     def computeLStageAdditiveCost(self, parentCell, cell):
-        
+
         # If the parent is empty, this is the start of the path and the
         # cost is 0.
         if (parentCell is None):
             return 0
-        
+
         # Cost is the Cartesian distance
         dX = cell.coords[0] - parentCell.coords[0]
         dY = cell.coords[1] - parentCell.coords[1]
         L = sqrt(dX * dX + dY * dY)
-        
+
         return L
 
     # Update the seach grid
@@ -98,14 +103,14 @@ class GeneralForwardSearchAlgorithm(PlannerBase):
             self.searchGrid = SearchGrid.fromOccupancyGrid(self.occupancyGrid, self.robotRadius)
         else:
             self.searchGrid.updateFromOccupancyGrid()
-    
+
     # The main search routine. The routine searches for a path between a given
     # set of coordinates. These are then converted into start and destination
     # cells in the search grid and the search algorithm is then run.
     def search(self, startCoords, goalCoords):
 
         self.handleChangeToOccupancyGrid()
-        
+
         # Empty the queue. self is needed to make sure everything is reset
         while (self.isQueueEmpty() == False):
             self.popCellFromQueue()
@@ -123,16 +128,16 @@ class GeneralForwardSearchAlgorithm(PlannerBase):
 
         #if self.start.label is CellLabel.OBSTRUCTED:
         #    return False
-        
+
         self.start.label = CellLabel.START
         self.start.pathCost = 0
 
         self.goal = self.searchGrid.getCellFromCoords(goalCoords)
         self.goalCellLabel = self.goal.label
-        
+
         #if self.goal.label is CellLabel.OBSTRUCTED:
         #    return False
-        
+
         self.goal.label = CellLabel.GOAL
 
         if rospy.is_shutdown():
@@ -158,7 +163,7 @@ class GeneralForwardSearchAlgorithm(PlannerBase):
             # planner from hanging
             if rospy.is_shutdown():
                 return False
-            
+
             cell = self.popCellFromQueue()
             if (self.hasGoalBeenReached(cell) == True):
                 self.goalReached = True
@@ -181,9 +186,9 @@ class GeneralForwardSearchAlgorithm(PlannerBase):
 
         # Do a final draw to make sure that the graphics are shown, even at the end state
         self.drawCurrentState()
-        
+
         print "numberOfCellsVisited = " + str(self.numberOfCellsVisited)
-        
+
         if self.goalReached:
             print "Goal reached"
         else:
@@ -212,11 +217,11 @@ class GeneralForwardSearchAlgorithm(PlannerBase):
         if (self.removeGoalCellFromPathIfOccupied is False) or \
            (self.goalCellLabel is not CellLabel.OBSTRUCTED):
             path.waypoints.append(pathEndCell)
-            
+
         # Start at the goal and find the parent. Find the cost associated with the parent
         cell = pathEndCell.parent
         path.travelCost = self.computeLStageAdditiveCost(pathEndCell.parent, pathEndCell)
-        
+
         # Iterate back through and extract each parent in turn and add
         # it to the path. To work out the travel length along the
         # path, you'll also have to add self at self stage.
@@ -224,7 +229,7 @@ class GeneralForwardSearchAlgorithm(PlannerBase):
             path.waypoints.appendleft(cell)
             path.travelCost = path.travelCost + self.computeLStageAdditiveCost(cell.parent, cell)
             cell = cell.parent
-            
+
         # Update the stats on the size of the path
         path.numberOfWaypoints = len(path.waypoints)
 
@@ -235,13 +240,17 @@ class GeneralForwardSearchAlgorithm(PlannerBase):
 
         print "Path travel cost = " + str(path.travelCost)
         print "Path cardinality = " + str(path.numberOfWaypoints)
-        
+
+        self.total_travel_cost += path.travelCost
+
+        print "Total travel cost = " + str(self.total_travel_cost)
+
         # Draw the path if requested
         if (self.showGraphics == True):
             self.searchGridDrawer.update()
             self.searchGridDrawer.drawPathGraphicsWithCustomColour(path, colour)
             self.searchGridDrawer.waitForKeyPress()
-        
+
         # Return the path
         return path
 
@@ -255,6 +264,5 @@ class GeneralForwardSearchAlgorithm(PlannerBase):
     # Extract the path between the start and goal.
     def extractPathToGoal(self):
         path = self.extractPathEndingAtCell(self.goal, 'yellow')
-       
+
         return path
-            
