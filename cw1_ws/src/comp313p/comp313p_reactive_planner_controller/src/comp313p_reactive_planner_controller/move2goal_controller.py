@@ -44,6 +44,7 @@ class Move2GoalController(ControllerBase):
         self.distance_travelled = 0.0
         self.angle_turned = 0.0
         self.total_waypoints = 0
+
         self.posePublisher = rospy.Publisher('/robot0/pose', Pose2D, queue_size=10)
 
 
@@ -75,7 +76,6 @@ class Move2GoalController(ControllerBase):
     def driveToWaypoint(self, waypoint):
         # print '> > > Driving to new waypoint'
         self.total_waypoints += 1
-        self.posePublisher.publish(self.pose)
 
         print '> > > Time elapsed: ' + str(rospy.get_rostime().secs - self.start_time) + 's'
         print '> > > Total waypoints: ' + str(self.total_waypoints)
@@ -156,6 +156,8 @@ class Move2GoalController(ControllerBase):
 
         # Stopping our robot after the movement is over
         self.stopRobot()
+
+        self.posePublisher.publish(self.pose)
 
         return (not self.abortCurrentGoal) & (not rospy.is_shutdown())
 
